@@ -1,0 +1,8 @@
+1	test-protein	protein	44000	45000	.	+	.	ID=t1;Name=pz1
+1	test-protein	exon1	44000	44515	.	+	.	ID=e1;Parent=t1;Name=exon1
+1	test-protein	exon2	44860	45000	.	+	.	ID=e2;Parent=t1;Name=exon2
+1	test-protein	protein	44100	45005	.	+	.	ID=t2;Name=pz2
+1	test-protein	exon1	44100	44110	.	+	.	ID=e3;Parent=t2;Name=exon3
+1	test-protein	exon2	44140	44420	.	+	.	ID=e4;Parent=t2;Name=exon4
+1	test-protein	exon1	44512	44912	.	+	.	ID=e5;Parent=t2;Name=exon5
+1	test-protein	exon2	44980	45005	.	+	.	ID=e6;Parent=t2;Name=exon6

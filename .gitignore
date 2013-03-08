@@ -21,3 +21,4 @@ sample_data/raw/tomato
 /release-notes.html
 samtools-master/
 setup.log
+/test-data/hg19.fa

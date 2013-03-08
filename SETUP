@@ -1,0 +1,3 @@
+./setup.sh
+bin/prepare-refseqs.pl --fasta test-data/hg19.fa
+bin/flatfile-to-json.pl --gff test-data/protein-test.gff --tracklabel protein-test --cssClass basic
