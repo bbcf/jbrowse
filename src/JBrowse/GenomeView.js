@@ -910,6 +910,7 @@ GenomeView.prototype.dragMove = function(event) {
         x: this.winStartPos.x - (event.clientX - this.dragStartPos.x),
         y: this.winStartPos.y - (event.clientY - this.dragStartPos.y)
         });
+    this.drawHighlightPos();
     dojo.stopEvent(event);
 };
 
@@ -1111,7 +1112,8 @@ GenomeView.prototype.onFineMove = function( startbp, endbp ) {
  * Hook for other components to dojo.connect to.
  */
 GenomeView.prototype.onCoarseMove = function( startbp, endbp ) {
-    this.updateLocationThumb();
+  this.updateLocationThumb();
+  this.drawHighlightPos();
 };
 
 /**
@@ -2226,6 +2228,7 @@ GenomeView.prototype.updateTrackList = function() {
     }
 };
 
+<<<<<<< HEAD
 
 /**
  * Lay out all shown tracks.
@@ -2264,6 +2267,30 @@ GenomeView.prototype.layoutTracks = function() {
     this.scrollContainer.style.height = this.containerHeight + "px";
 };
 
+=======
+GenomeView.prototype.highlightPos = function(pos){
+    this.highlightpos = pos;
+};
+GenomeView.prototype.drawHighlightPos = function(){
+    if (this.highlightpos){
+        console.log(this.highlightpos);
+        console.log(this.bpToPx(this.highlightpos));
+        var pxDist = this.bpToPx(this.highlightpos - this.minVisible());
+        console.log(pxDist);
+        var posX = pxDist + dojo.position(this.elem, true).x;
+        console.log(posX);
+        if(!this.verticalHighlight){
+            dojo.create('li', {className: 'toto'}, this.staticTrack.div);
+            var d = dojo.create( 'div', {className: 'verticalHighlightPosition'}, this.staticTrack.div );
+            this.verticalHighlight = d;
+        }
+        var line = this.verticalHighlight;
+        line.style.display = 'block';      //make line visible
+        line.style.width = Math.max(this.bpToPx(1), 1) +'px';
+        line.style.left = posX + 'px'; //set location on screen
+        this.drawBasePairLabel({ name: 'highlight', offset: 0, x: posX, parent: this.scaleTrackDiv });
+    }
+};
 return GenomeView;
 });
 

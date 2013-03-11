@@ -140,6 +140,8 @@ var Browser = function(params) {
                            thisB.navigateTo( initialLocString );
                            thisB.passMilestone( 'completely initialized', { success: true } );
                        });
+                       // set personalized hightlight
+                       thisB.hightlightRegion();
                        thisB.reportUsageStats();
                     });
                 });
@@ -1899,7 +1901,8 @@ Browser.prototype.makeCurrentViewURL = function( overrides ) {
                     {
                         loc:    this.view.visibleRegionLocString(),
                         tracks: this.view.visibleTrackNames().join(','),
-                        highlight: (this.getHighlight()||'').toString()
+                        highlight: (this.getHighlight()||'').toString(),
+			hl: (this.config.hl || '')
                     },
                     overrides || {}
                 )
@@ -2354,6 +2357,13 @@ Browser.prototype.showRegionWithHighlight = function( location ) {
     this.showRegion( location );
 };
 
+Browser.prototype.hightlightRegion = function(){
+    console.log('hl region');
+    if(this.config.hl){
+        console.log("do it");
+        this.view.highlightPos(this.config.hl);
+    }
+};
 
 return Browser;
 

@@ -935,11 +935,36 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                                  displayStart, displayEnd, block )  {
         var subfeatures = feature.get('subfeatures');
         if( subfeatures ) {
-            for (var i = 0; i < subfeatures.length; i++) {
-                this.renderSubfeature( feature, featDiv,
-                                      subfeatures[i],
-                                      displayStart, displayEnd, block );
-            }
+            // feature rendered is a protein so we need
+            // extra information
+            // if (feature.get("type") == "protein"){
+            //     //get the feature sequence
+            //     this.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
+            //     if( refSeqStore ) {
+            //         var featStart = feature.get("start");
+            //         var featEnd = feature.get("end");
+            //         var subfeatures = feature.get("subfeatures");
+            //         refSeqStore.getRange( this.refSeq, featStart, featEnd,
+            //             dojo.hitch( this, function( start, end, featseq ) {
+            //                 additionnal_info = {'feat-seq': featseq, 'feat-start': featStart,
+            //                 'feat-end': featEnd, 'subs': subfeatures, 'scale': scale};
+            //                 for (var i = 0; i < subfeatures.length; i++) {
+            //                     additionnal_info['sub-index'] = i;
+            //                     if (additionnal_info)
+            //                         this.renderProtFeatures(feature, featDiv,
+            //                             subfeatures[i], displayStart, displayEnd, additionnal_info);
+            //         }}));
+            //     }
+            // }));
+
+            // // 'normal' rendering
+            // } else {
+                for (var i = 0; i < subfeatures.length; i++) {
+                    this.renderSubfeature( feature, featDiv,
+                                          subfeatures[i],
+                                          displayStart, displayEnd, block );
+                }
+            //}
         }
     },
 
@@ -1105,6 +1130,129 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         block.featureNodes[ subfeature.id() ] = subDiv;
 
         return subDiv;
+    },
+
+    renderProtFeatures: function(feature, featDiv, subfeature, displayStart, displayEnd, additionnal_info){
+        var subStart = subfeature.get('start');
+        var subEnd = subfeature.get('end');
+        var subDiv = document.createElement("div");
+        var type = subfeature.get('type');
+        subDiv.className = (this.config.style.subfeatureClasses||{})[type] || this.config.style.className + '-' + type;
+        var subStartIndex = subStart - additionnal_info['feat-start'];
+        var subEndIndex = subEnd - additionnal_info['feat-start'];
+        var featseq = additionnal_info['feat-seq'];
+        var subseq = featseq.slice(subStartIndex, subEndIndex);
+        testit = featseq;
+
+        // an aa can be on two subfeatures (e.g: 1 codon on the subfeature X and 2 codon on the
+        // the subfeature X+1)
+        var pre_mod = 0;
+        if (subStartIndex > 0){
+            // remove base in the prefix if they are already used
+            pre_mod = subStartIndex % 3;
+            if (pre_mod > 0){
+                var add = 3 - pre_mod;
+                subStartIndex += add;
+                subStart += add;
+                //displayStart += add;
+            }
+            subseq = featseq.slice(subStartIndex, subEndIndex);
+        }
+       
+        // fetch more bases at the end if the aa is not finished
+        var post_mod = subseq.length % 3;
+        if (post_mod > 0){
+            var nb_bases = 3 - post_mod;
+            var index = additionnal_info['sub-index'] + 1;
+            var subplusone = additionnal_info['subs'][index];
+            if (subplusone){
+                var subplusoneStartIndex = subplusone.get("start") - additionnal_info['feat-start'];
+                var codons = featseq.slice(subplusoneStartIndex, subplusoneStartIndex + nb_bases);
+                subseq += codons;
+                subEnd += nb_bases;
+                //displayEnd += nb_bases;
+            }
+        }
+        //remove bases at the end that will not be displayed because they are not enough
+        //to draw an aa
+        var rem = (subEnd - subStart) % 3;
+        if (rem > 0){
+            subEnd -= rem;
+            subseq = featseq.slice(subStartIndex, subEndIndex - rem);
+        }
+        // translate
+        var gencode = this.browser.config.fake_gencode;
+        var protseq = '';
+        var i = 0;
+        var l = subseq.length;
+        while (i < l){
+            var cd = subseq.substring(i, i+3);
+            if(cd){
+                var add = gencode[cd];
+                if (add){
+                    protseq += add;
+                }
+            }
+            i += 3;
+        }
+        //subDiv.innerHTML = protseq;
+        if (protseq !== ''){
+            
+            var charSize = this.getCharacterMeasurements();
+
+            var container  = document.createElement('div');
+            var charWidth = 100.0 / subseq.length;
+            var protWidth = charWidth * 3 + "%";
+            var drawChars = additionnal_info['scale'] >= charSize.w;
+            //draw protein sequence
+            for( i = 0; i < protseq.length; i++ ) {
+                var aa = document.createElement('span');
+                aa.className = 'aa aa_' + protseq[i].toLowerCase();
+                aa.style.width = protWidth;
+                if( drawChars )
+                    aa.innerHTML = protseq[i];
+                container.appendChild(aa);
+            }
+           
+            //draw adn sequence
+            for( i = 0; i < subseq.length; i++ ) {
+                var base = document.createElement('span');
+                base.className = 'base';
+                base.style.width = charWidth + '%';
+                if( drawChars )
+                    base.innerHTML = subseq[i];
+                container.appendChild(base);
+            }
+            //container.style.right = displayStart + "px";
+            //container.style.width="100%";
+            subDiv.appendChild(container);
+        }
+
+
+        switch ( subfeature.get('strand') ) {
+        case 1:
+        case '+':
+            subDiv.className += " plus-" + subDiv.className; break;
+        case -1:
+        case '-':
+            subDiv.className += " minus-" + subDiv.className; break;
+        }
+
+        // if the feature has been truncated to where it doesn't cover
+        // this subfeature anymore, just skip this subfeature
+        if ((subEnd <= displayStart) || (subStart >= displayEnd)) return;
+
+        if (Util.is_ie6) subDiv.appendChild(document.createComment());
+
+        // NOTE: subfeatures are hidden until they are centered by
+        // _centerFeatureElements, so that they don't jump around
+        // on the screen
+        var featLength = displayEnd - displayStart;
+        subDiv.style.cssText +=
+            "visibility: hidden; left: " + (100 * ((subStart - displayStart) / featLength)) + "%;"
+            + "top: 0px;"
+            + "width: " + (100 * ((subEnd - subStart) / featLength)) + "%;position:absolute;";
+        featDiv.appendChild(subDiv);
     },
 
     _getLayout: function( scale ) {

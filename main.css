@@ -444,23 +444,14 @@ span.base {
     text-shadow: white 0px 0px 1px;
 }
 .base_n {
-    background-color: #C6C6C6;
 }
 .base_a {
-    background-color: #00BF00;
-    background-color: rgba( 0, 191, 0, 0.9 );
 }
 .base_c {
-    background-color: #4747ff;
-    background-color: rgba( 71, 71, 255, 0.9);
 }
 .base_t {
-    background-color: red;
-    background-color: rgba( 255, 0, 0, 0.9);
 }
 .base_g {
-    background-color: #d5bb04;
-    background-color: rgba( 213, 187, 4, 0.9);
 }
 .base_reference {
     background-color: #bbb;
@@ -989,6 +980,18 @@ a.dialog-new-window {
     background-color: #FF0000;
     z-index: 15;
     top: 0;
+}
+
+.verticalHighlightPosition {
+    position: fixed;
+    display: none;
+    left: -2px;
+    height: 100%;
+    width: 1px;
+    background-color: #FF0000;
+    z-index: 15;
+    top: 0;
+    opacity: 0.3;
 }
 
 /* styles for per-base quality table in alignment detail pages */
