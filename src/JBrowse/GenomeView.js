@@ -906,8 +906,9 @@ GenomeView.prototype.checkDragOut = function( event ) {
 
 GenomeView.prototype.dragMove = function(event) {
     this.dragging = true;
+    var x = this.winStartPos.x - (event.clientX - this.dragStartPos.x);
     this.setPosition({
-        x: this.winStartPos.x - (event.clientX - this.dragStartPos.x),
+        x: x,
         y: this.winStartPos.y - (event.clientY - this.dragStartPos.y)
         });
     this.drawHighlightPos();
@@ -1106,6 +1107,7 @@ GenomeView.prototype.showCoarse = function() {
  */
 GenomeView.prototype.onFineMove = function( startbp, endbp ) {
     this.updateLocationThumb();
+    this.drawHighlightPos();
 };
 
 /**
@@ -2271,14 +2273,11 @@ GenomeView.prototype.layoutTracks = function() {
 GenomeView.prototype.highlightPos = function(pos){
     this.highlightpos = pos;
 };
+
 GenomeView.prototype.drawHighlightPos = function(){
     if (this.highlightpos){
-        console.log(this.highlightpos);
-        console.log(this.bpToPx(this.highlightpos));
-        var pxDist = this.bpToPx(this.highlightpos - this.minVisible());
-        console.log(pxDist);
+        var pxDist = this.bpToPx(this.highlightpos) - (this.getPosition().x + this.offset);
         var posX = pxDist + dojo.position(this.elem, true).x;
-        console.log(posX);
         if(!this.verticalHighlight){
             dojo.create('li', {className: 'toto'}, this.staticTrack.div);
             var d = dojo.create( 'div', {className: 'verticalHighlightPosition'}, this.staticTrack.div );

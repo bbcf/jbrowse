@@ -2358,9 +2358,7 @@ Browser.prototype.showRegionWithHighlight = function( location ) {
 };
 
 Browser.prototype.hightlightRegion = function(){
-    console.log('hl region');
     if(this.config.hl){
-        console.log("do it");
         this.view.highlightPos(this.config.hl);
     }
 };
