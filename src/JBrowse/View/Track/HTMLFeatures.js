@@ -915,7 +915,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         }
 
         if( featwidth > this.config.style.minSubfeatureWidth ) {
-            this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block, scale);
+            this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block, scale, labelDiv);
         }
 
         // render the popup menu if configured
@@ -931,7 +931,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
     },
 
     handleSubFeatures: function( feature, featDiv,
-                                 displayStart, displayEnd, block, scale)  {
+                                 displayStart, displayEnd, block, scale, labelDiv)  {
         var subfeatures = feature.get('subfeatures');
         if(subfeatures) {
             //feature rendered is a protein so we need
@@ -954,6 +954,9 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                                         subfeatures[i], displayStart, displayEnd, block, additionnal_info);
                                 }
                             }
+                            // update feature & label top
+                             featDiv.style.top = (featDiv.style.top.replace('px', '') * 1.4) + 'px';
+                             labelDiv.style.top = (labelDiv.style.top.replace('px', '') * 1.4) + 'px';
                          }
                         ));
                     }
@@ -1253,7 +1256,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             var drawChars = additionnal_info['scale'] >= charSize.w;
             //draw protein sequence
             for( i = 0; i < protseq.length; i++ ) {
-                var aa = document.createElement('span');
+                var aa = document.createElement('div');
                 aa.className = 'aa aa_' + protseq[i].toLowerCase();
                 aa.style.width = protWidth;
                 if( drawChars )
@@ -1318,7 +1321,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         featDiv.appendChild(subDiv);
 
         block.featureNodes[ subfeature.id() ] = subDiv;
-
         return subDiv;
            // + "width: " + (100 * ((subEnd - subStart) / featLength)) + "%;position:absolute;";
     },
