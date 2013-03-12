@@ -733,7 +733,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         //featureStart and featureEnd indicate how far left or right
         //the feature extends in bp space, including labels
         //and arrowheads if applicable
-
         var featureEnd = feature.get('end');
         var featureStart = feature.get('start');
         if( typeof featureEnd == 'string' )
@@ -916,7 +915,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         }
 
         if( featwidth > this.config.style.minSubfeatureWidth ) {
-            this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block);
+            this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block, scale);
         }
 
         // render the popup menu if configured
@@ -932,39 +931,89 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
     },
 
     handleSubFeatures: function( feature, featDiv,
-                                 displayStart, displayEnd, block )  {
+                                 displayStart, displayEnd, block, scale)  {
         var subfeatures = feature.get('subfeatures');
-        if( subfeatures ) {
-            // feature rendered is a protein so we need
-            // extra information
-            // if (feature.get("type") == "protein"){
-            //     //get the feature sequence
-            //     this.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
-            //     if( refSeqStore ) {
-            //         var featStart = feature.get("start");
-            //         var featEnd = feature.get("end");
-            //         var subfeatures = feature.get("subfeatures");
-            //         refSeqStore.getRange( this.refSeq, featStart, featEnd,
-            //             dojo.hitch( this, function( start, end, featseq ) {
-            //                 additionnal_info = {'feat-seq': featseq, 'feat-start': featStart,
-            //                 'feat-end': featEnd, 'subs': subfeatures, 'scale': scale};
-            //                 for (var i = 0; i < subfeatures.length; i++) {
-            //                     additionnal_info['sub-index'] = i;
-            //                     if (additionnal_info)
-            //                         this.renderProtFeatures(feature, featDiv,
-            //                             subfeatures[i], displayStart, displayEnd, additionnal_info);
-            //         }}));
-            //     }
-            // }));
+        if(subfeatures) {
+            //feature rendered is a protein so we need
+            //extra information
+            if (feature.get("type") == "protein"){
+                //get the feature sequence
+                var featStart = feature.get("start");
+                var featEnd = feature.get("end");
+                var featseq = feature.get("seq");
+                this.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
+                    if(refSeqStore) {
+                        refSeqStore.getFeatures({ref: this.refSeq.name, start: featStart, end: featEnd},
+                            dojo.hitch(this, function(ff) {
+                            additionnal_info = {'feat-seq':  ff.get('seq'), 'feat-start': featStart,
+                                                'feat-end': featEnd, 'subs': subfeatures, 'scale': scale};
+                            for (var i = 0; i < subfeatures.length; i++) {
+                                additionnal_info['sub-index'] = i;
+                                if (additionnal_info){
+                                    this.renderProtFeatures(feature, featDiv,
+                                        subfeatures[i], displayStart, displayEnd, block, additionnal_info);
+                                }
+                            }
+                         }
+                        ));
+                    }
+                }));
+            /////////////*******************
+        // track.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
+        //     valueContainer = dojo.byId(valueContainerID) || valueContainer;
+        //     if( refSeqStore ) {
+        //         refSeqStore.getFeatures(
+        //             { ref: this.refSeq.name, start: f.get('start'), end: f.get('end')},
+        //             // feature callback
+        //             dojo.hitch( this, function( feature ) {
+        //                 var seq = feature.get('seq');
+        //                 valueContainer = dojo.byId(valueContainerID) || valueContainer;
+        //                 valueContainer.innerHTML = '';
+        //                 // the HTML is rewritten by the dojo dialog
+        //                 // parser, but this callback may be called either
+        //                 // before or after that happens.  if the fetch by
+        //                 // ID fails, we have come back before the parse.
+        //                 var textArea = new FASTAView({ width: 62, htmlMaxRows: 10 })
+        //                                    .renderHTML(
+        //                                        { ref:   this.refSeq.name,
+        //                                          start: f.get('start'),
+        //                                          end:   f.get('end'),
+        //                                          strand: f.get('strand'),
+        //                                          type: f.get('type')
+        //                                        },
+        //                                        f.get('strand') == -1 ? Util.revcom(seq) : seq,
+        //                                        valueContainer
+        //                                    );
+        //           }),
+        //           // end callback
+        //           function() {},
+        //           // error callback
+        //           dojo.hitch( this, function() {
+        //               valueContainer = dojo.byId(valueContainerID) || valueContainer;
+        //               valueContainer.innerHTML = '<span class="ghosted">reference sequence not available</span>';
+        //           })
+        //         );
+        //     } else {
+        //         valueContainer.innerHTML = '<span class="ghosted">reference sequence not available</span>';
+        //     }
+        // }));
+        /////////////*******************
 
-            // // 'normal' rendering
-            // } else {
+
+
+
+
+
+
+
+            // 'normal' rendering
+            } else {
                 for (var i = 0; i < subfeatures.length; i++) {
                     this.renderSubfeature( feature, featDiv,
                                           subfeatures[i],
                                           displayStart, displayEnd, block );
                 }
-            //}
+            }
         }
     },
 
@@ -1132,9 +1181,10 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         return subDiv;
     },
 
-    renderProtFeatures: function(feature, featDiv, subfeature, displayStart, displayEnd, additionnal_info){
+    renderProtFeatures: function(feature, featDiv, subfeature, displayStart, displayEnd, block, additionnal_info){
         var subStart = subfeature.get('start');
         var subEnd = subfeature.get('end');
+        var featLength = displayEnd - displayStart;
         var subDiv = document.createElement("div");
         var type = subfeature.get('type');
         subDiv.className = (this.config.style.subfeatureClasses||{})[type] || this.config.style.className + '-' + type;
@@ -1143,7 +1193,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         var featseq = additionnal_info['feat-seq'];
         var subseq = featseq.slice(subStartIndex, subEndIndex);
         testit = featseq;
-
         // an aa can be on two subfeatures (e.g: 1 codon on the subfeature X and 2 codon on the
         // the subfeature X+1)
         var pre_mod = 0;
@@ -1158,7 +1207,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             }
             subseq = featseq.slice(subStartIndex, subEndIndex);
         }
-       
         // fetch more bases at the end if the aa is not finished
         var post_mod = subseq.length % 3;
         if (post_mod > 0){
@@ -1188,16 +1236,15 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         while (i < l){
             var cd = subseq.substring(i, i+3);
             if(cd){
-                var add = gencode[cd];
-                if (add){
-                    protseq += add;
+                var ad = gencode[cd];
+                if (ad){
+                    protseq += ad;
                 }
             }
             i += 3;
         }
         //subDiv.innerHTML = protseq;
         if (protseq !== ''){
-            
             var charSize = this.getCharacterMeasurements();
 
             var container  = document.createElement('div');
@@ -1213,46 +1260,67 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                     aa.innerHTML = protseq[i];
                 container.appendChild(aa);
             }
-           
+
             //draw adn sequence
             for( i = 0; i < subseq.length; i++ ) {
                 var base = document.createElement('span');
-                base.className = 'base';
+                base.className = 'base big';
                 base.style.width = charWidth + '%';
-                if( drawChars )
+                if(drawChars)
                     base.innerHTML = subseq[i];
                 container.appendChild(base);
             }
-            //container.style.right = displayStart + "px";
-            //container.style.width="100%";
+            container.style.right = displayStart + "px";
+            container.style.width="100%";
             subDiv.appendChild(container);
         }
 
 
-        switch ( subfeature.get('strand') ) {
-        case 1:
-        case '+':
-            subDiv.className += " plus-" + subDiv.className; break;
-        case -1:
-        case '-':
-            subDiv.className += " minus-" + subDiv.className; break;
+        var className;
+        var featLength = displayEnd - displayStart;
+        if( this.config.style.subfeatureClasses ) {
+            className = this.config.style.subfeatureClasses[type];
+            if (className === undefined) { className = type; }
+            else if (className === null)  {
+                return null;
+            }
+        }
+        else {
+            className = type;
+        }
+        if( className == 'hidden' )
+            return null;
+
+        dojo.addClass(subDiv, "subfeature");
+        // check for className to avoid adding "null", "plus-null", "minus-null" 
+        if (className) {
+            switch ( subfeature.get('strand') ) {
+            case 1:
+            case '+':
+                dojo.addClass(subDiv, "plus-" + className); break;
+            case -1:
+            case '-':
+                dojo.addClass(subDiv, "minus-" + className); break;
+            default:
+                dojo.addClass(subDiv, className);
+            }
         }
 
         // if the feature has been truncated to where it doesn't cover
         // this subfeature anymore, just skip this subfeature
-        if ((subEnd <= displayStart) || (subStart >= displayEnd)) return;
+        if ( subEnd <= displayStart || subStart >= displayEnd )
+            return null;
 
         if (Util.is_ie6) subDiv.appendChild(document.createComment());
 
-        // NOTE: subfeatures are hidden until they are centered by
-        // _centerFeatureElements, so that they don't jump around
-        // on the screen
-        var featLength = displayEnd - displayStart;
-        subDiv.style.cssText +=
-            "visibility: hidden; left: " + (100 * ((subStart - displayStart) / featLength)) + "%;"
-            + "top: 0px;"
+        subDiv.style.cssText = "left: " + (100 * ((subStart - displayStart) / featLength)) + "%;"
             + "width: " + (100 * ((subEnd - subStart) / featLength)) + "%;position:absolute;";
         featDiv.appendChild(subDiv);
+
+        block.featureNodes[ subfeature.id() ] = subDiv;
+
+        return subDiv;
+           // + "width: " + (100 * ((subEnd - subStart) / featLength)) + "%;position:absolute;";
     },
 
     _getLayout: function( scale ) {
@@ -1317,7 +1385,35 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         );
 
         return o;
-    }
+    },
+    /**
+     * @returns {Object} containing <code>h</code> and <code>w</code>,
+     *      in pixels, of the characters being used for sequences
+     */
+    getCharacterMeasurements: function() {
+        if( !this._measurements )
+            this._measurements = this._measureSequenceCharacterSize( this.div );
+        return this._measurements;
+    },
+
+    /**
+     * Conducts a test with DOM elements to measure sequence text width
+     * and height.
+     */
+    _measureSequenceCharacterSize: function( containerElement ) {
+        var widthTest = document.createElement("div");
+        widthTest.className = "sequence";
+        widthTest.style.visibility = "hidden";
+        var widthText = "12345678901234567890123456789012345678901234567890";
+        widthTest.appendChild(document.createTextNode(widthText));
+        containerElement.appendChild(widthTest);
+        var result = {
+            w:  widthTest.clientWidth / widthText.length,
+            h: widthTest.clientHeight
+        };
+        containerElement.removeChild(widthTest);
+        return result;
+  }
 
 });
 
