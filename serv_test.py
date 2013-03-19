@@ -6,6 +6,17 @@ from bottle import request
 app = bottle.Bottle()
 import urllib
 
+
+from wsgiproxy.app import WSGIProxyApp
+
+prefix = '/jbrowse-sg'
+root_app = bottle.Bottle()
+app.mount(prefix, root_app)
+
+
+
+
+
 # load static files
 from bottle import SimpleTemplate
 SimpleTemplate.defaults["_u"] = app.get_url
@@ -38,13 +49,13 @@ def index(filename):
     if not fname:
         fname = 'index.html'
     return static_file(fname, root=os.path.join(path, ''))
-
-
+    
 @app.route('/')
 @view('index.html')
 def home():
     return {}
 
 
+
 bottle.debug(True)
-bottle.run(app, host='localhost', port=8080, reloader=True)
+bottle.run(app, host='localhost', port=8000, reloader=True)
