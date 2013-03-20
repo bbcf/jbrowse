@@ -31,7 +31,11 @@ var VCFIndexedFile = declare( TabixIndexedFile, {
         var i = this.inherited( arguments );
         if( i ) {
             i.start--;
-            i.end = i.start + i.fields[3].length;
+            if(i.fields && i.fields[3]){
+              i.end = i.start + i.fields[3].length;
+            } else {
+              i.end = i.start + 1;
+            }
         }
         return i;
     }
@@ -62,7 +66,6 @@ return declare( [ SeqFeatureStore, DeferredStatsMixin, DeferredFeaturesMixin, Gl
                 browser: this.browser,
                 chunkSizeLimit: args.chunkSizeLimit
             });
-
         this._loadHeader().then( function() {
             thisB._estimateGlobalStats( function( stats, error ) {
                 if( error )

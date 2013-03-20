@@ -1,0 +1,40 @@
+## FIRT SETUP ##
+$ ./setup.sh
+
+
+## PREPARE SEQUENCE ##
+hg19.fa :: fasta, downloaded from NCBI (ftp://ftp.ncbi.nih.gov/genomes/H_sapiens/Assembled_chromosomes/seq/)
+
+$ bin/prepare-refseqs...pl --fasta test-data/hg19.fa
+
+
+## UCSC DATA ##
+Downloaded from UCSC (http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/)
+trackDb.sql & trackDb.txt.gz :: must be in the directory to add any UCSC track
+knownGene.sql & knownGene.txt.gz :: the known genes
+
+$ bin/ucsc-to-json.pl -in test-data/ucsc/ --track knownGene
+
+
+## VARIANT ###
+clinvar :: Downloaded from NCBI (ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/)
+
+change chromosome names & use samtools:
+$ awk '{ if (!/^#/){print "chr"$0} }' clinvar_20130118.vcf > clinvar_20130118.chr.vcf 
+$ bgzip -c file.vcf > file.vcf.gz
+$ tabix -p vcf file.vcf.gz
+
+add to tracklist.json
+{
+         "storeClass" : "JBrowse/Store/SeqFeature/VCFTabix",
+         "urlTemplate" : "../test-data/clinvar_20130118.chr.vcf.gz",
+         "metadata" : {
+            "Description" : "Variants called from volvox-sorted.bam using samtools and bcftools"
+         },
+         "label" : "test-vcf",
+         "type" : "JBrowse/View/Track/HTMLFeatures",
+         "key" : "TEST VCF"
+},
+
+
+bin/flatfile-to-json.pl --gff test-data/protein-test.gff --tracklabel protein-test --cssClass basic
