@@ -3,15 +3,19 @@ import bottle
 from bottle import mako_view
 from bottle import view
 from bottle import request
+import sys
+
 app = bottle.Bottle()
 import urllib
 
 
 from wsgiproxy.app import WSGIProxyApp
 
-prefix = '/jbrowse-sg'
-root_app = bottle.Bottle()
-app.mount(prefix, root_app)
+if len(sys.argv) > 1:
+    prefix = sys.argv[1]
+    print '[x] set prefix url to %s' % prefix
+    root_app = bottle.Bottle()
+    app.mount(prefix, root_app)
 
 
 
@@ -48,6 +52,7 @@ def index(filename):
     path, fname = os.path.split(filename)
     if not fname:
         fname = 'index.html'
+    print 'filename %s ' % filename
     return static_file(fname, root=os.path.join(path, ''))
     
 @app.route('/')
