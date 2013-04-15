@@ -26,11 +26,23 @@ Bgzip it then index it with samtools tabix
 $ bgzip clinvar_20130118.chr.vcf
 $ tabix -p vcf clinvar_20130118.chr.vcf.gz
 
-## NCBI DATA ##
-Missing reference protein data
+
+## PROTEIN ##
+:: from UCSC tables ::
+dl http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/genePredToGtf
+dl ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/knownGene.txt.gz
+prepare the data:
+$ zcat test-data/knownGene.txt.gz | cut -f1-10 | bin/genePredToGtf file stdin test-data/knownGene.gtf
+
+:: Homo_sapiens.GRCh37.70.gtf ::
+dl from Ensembl : ftp://ftp.ensembl.org/pub/release-70/gtf/homo_sapiens/
+add 'chr' in front of all chromosome names
+
+change 'protein_coding' to protein (just take line with CDS)
+$ awk '{OFS="\t";FS="\t";if (!/^#/){if (!/^#/){ if($3 ~ '/^CDS$/'){if($2 ~ '/protein_coding/'){print $1,"protein",substr($0,index($0,$3))} else {print $0}}}}'
+
+add the file
+$ bin/flatfile-to-json.pl --gff test-data/Homo_sapiens.GRCh37.70.chr.modified.gtf --tracklabel protein --cssClass basic
 
 
 
-ftp://ftp.ncbi.nih.gov/refseq/H_sapiens/RefSeqGene/refseqgene2.genomic.gbff.gz
-
-bin/flatfile-to-json.pl --gff test-data/protein-test.gff --tracklabel protein-test --cssClass basic
