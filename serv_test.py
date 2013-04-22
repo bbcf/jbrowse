@@ -4,21 +4,13 @@ from bottle import mako_view
 from bottle import view
 from bottle import request
 import sys
+import getopt
 
 app = bottle.Bottle()
 import urllib
 
 
 from wsgiproxy.app import WSGIProxyApp
-
-if len(sys.argv) > 1:
-    prefix = sys.argv[1]
-    print '[x] set prefix url to %s' % prefix
-    root_app = bottle.Bottle()
-    app.mount(prefix, root_app)
-
-
-
 
 
 # load static files
@@ -61,6 +53,20 @@ def home():
     return {}
 
 
+port = 8080
+
+opts, args = getopt.getopt(sys.argv[1:], 'f:p:')
+
+for opt in opts:
+    if 'p' in opt[0]:
+        port = opt[1]
+        
+    if 'f' in opt[0]:
+        print('[x] Serving on  prefix: %s' % opt[1])
+        root_app = bottle.Bottle()
+        app.mount(opt[1], root_app)
+
+
 
 bottle.debug(True)
-bottle.run(app, host='localhost', port=8000, reloader=True)
+bottle.run(app, host='localhost', port=port, reloader=True)
