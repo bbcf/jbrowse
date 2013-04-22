@@ -12,6 +12,22 @@ import urllib
 
 from wsgiproxy.app import WSGIProxyApp
 
+port = 8080
+prefix=''
+use_root = False
+
+opts, args = getopt.getopt(sys.argv[1:], 'f:p:')
+
+for opt in opts:
+    if 'p' in opt[0]:
+        port = opt[1]
+        
+    if 'f' in opt[0]:
+        prefix = opt[1]
+        print('[x] Serving on  prefix: %s' % prefix)
+        root_app = bottle.Bottle()
+        app.mount(prefix, root_app)
+        use_root = False
 
 # load static files
 from bottle import SimpleTemplate
@@ -53,20 +69,10 @@ def home():
     return {}
 
 
-port = 8080
-
-opts, args = getopt.getopt(sys.argv[1:], 'f:p:')
-
-for opt in opts:
-    if 'p' in opt[0]:
-        port = opt[1]
-        
-    if 'f' in opt[0]:
-        print('[x] Serving on  prefix: %s' % opt[1])
-        root_app = bottle.Bottle()
-        app.mount(opt[1], root_app)
-
+useapp = app
+if use_root:
+    useapp = root_app
 
 
 bottle.debug(True)
-bottle.run(app, host='localhost', port=port, reloader=True)
+bottle.run(useapp, host='localhost', port=port, reloader=True)
