@@ -91,7 +91,6 @@ return declare( 'JBrowse.View.TrackList.Simple', null,
             false,
             trackConfigs
         );
-
         this._blinkTracks( trackConfigs );
     },
 

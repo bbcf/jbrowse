@@ -775,20 +775,24 @@ Browser.prototype.openFileDialog = function() {
         .show({
             openCallback: dojo.hitch( this, function( results ) {
                 var confs = results.trackConfs || [];
+                console.log(confs);
                 if( confs.length ) {
 
                     // tuck away each of the store configurations in
                     // our store configuration, and replace them with
                     // their names.
                     array.forEach( confs, function( conf ) {
+                        console.log("Conf : ");
+                        console.log(conf);
                         var storeConf = conf.store;
+                        console.log("storeConf : ");
+                        console.log(storeConf);
                         if( storeConf && typeof storeConf == 'object' ) {
                             delete conf.store;
                             var name = this._addStoreConfig( storeConf.name, storeConf );
                             conf.store = name;
                         }
                     },this);
-
                     // send out a message about how the user wants to create the new tracks
                     this.publish( '/jbrowse/v1/v/tracks/new', confs );
 
@@ -801,6 +805,8 @@ Browser.prototype.openFileDialog = function() {
 };
 
 Browser.prototype.addTracks = function( confs ) {
+    console.log("ADD TRACK");
+    console.log(this.config.stores);
     // just register the track configurations right now
     this._addTrackConfigs( confs );
 };
@@ -970,7 +976,7 @@ Browser.prototype._reportCustomUsageStats = function(stats) {
  */
 Browser.prototype.getStore = function( storeName, callback ) {
     if( !callback ) throw 'invalid arguments';
-
+    console.log("get store: " + storeName);
     var storeCache = this._storeCache || {};
     this._storeCache = storeCache;
 
@@ -980,21 +986,22 @@ Browser.prototype.getStore = function( storeName, callback ) {
         callback( storeRecord.store );
         return;
     }
-
+    console.log(storeRecord);
+    console.log(this.config.stores);
     var conf = this.config.stores[storeName];
     if( ! conf ) {
         console.warn( "store '"+storeName+"' not found" );
         callback( null );
         return;
     }
-
+    console.log(conf);
     var storeClassName = conf.type;
     if( ! storeClassName ) {
         console.warn( "store "+storeName+" has no type defined" );
         callback( null );
         return;
     }
-
+    console.log(storeClassName);
     require( [ storeClassName ], dojo.hitch( this, function( storeClass ) {
                  var storeArgs = {};
                  dojo.mixin( storeArgs, conf );
@@ -1007,6 +1014,8 @@ Browser.prototype.getStore = function( storeName, callback ) {
 
                  var store = new storeClass( storeArgs );
                  this._storeCache[ storeName ] = { refCount: 1, store: store };
+                 console.log("[x] Store class :");
+                 console.log(store);
                  callback( store );
                  // release the callback because apparently require
                  // doesn't release this function
@@ -1021,6 +1030,9 @@ Browser.prototype.getStore = function( storeName, callback ) {
  */
 var uniqCounter = 0;
 Browser.prototype._addStoreConfig = function( /**String*/ name, /**Object*/ storeConfig ) {
+    console.log("add store config");
+    console.log(name);
+    console.log(storeConfig);
     name = name || 'addStore'+uniqCounter++;
 
     if( ! this.config.stores )
@@ -2361,6 +2373,33 @@ Browser.prototype.hightlightRegion = function(){
     if(this.config.hl){
         this.view.highlightPos(this.config.hl);
     }
+};
+
+/**
+ * Show a variant from a reference sequence.
+ * @param  {[String]} target_key The target track 'key' attribute (the reference sequence). 
+ * @param  {[String]} label The LabelTo give too the variant track produced
+ * @param  {[Integer]} position The position on the reference sequence 
+ * @param  {[String]} cigar The cigar String (as SAM format)
+ * @return publish a new 'variant' track.
+ */
+Browser.prototype.showVariants = function(target_key, position, cigar, label){
+    var tracks = this.config.tracks;
+    var that = this;
+    dojo.forEach( tracks, function( track, i ) {
+        if (track.key == target_key){
+            var newTrack = track;
+            newTrack.key = track.key + '_var';
+            newTrack.label = track.label + '_variants';
+            if (label){
+                newTrack.label = label;
+            }
+            track.variant = {'position': position, 'cigar': cigar};
+            console.log(newTrack);
+            that.publish('/jbrowse/v1/c/tracks/new', [newTrack]);
+        }
+    });
+
 };
 
 return Browser;

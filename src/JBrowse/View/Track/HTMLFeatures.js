@@ -913,7 +913,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             // in this feature's context menu or left-click handlers)
             labelDiv.callbackArgs = [ this, featDiv.feature, featDiv ];
         }
-
         if( featwidth > this.config.style.minSubfeatureWidth ) {
             this.handleSubFeatures(feature, featDiv, displayStart, displayEnd, block, scale, labelDiv);
         }
@@ -936,17 +935,27 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         if(subfeatures) {
             //feature rendered is a protein so we need
             //extra information
+            console.log("feature : ");
+            console.log(feature);
+            console.log(labelDiv);
+            console.log(labelDiv.track.key);
+
             if (feature.get("type") == "protein"){
                 //get the feature sequence
                 var featStart = feature.get("start");
                 var featEnd = feature.get("end");
                 var featseq = feature.get("seq");
+                var that = this;
                 this.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
                     if(refSeqStore) {
                         refSeqStore.getFeatures({ref: this.refSeq.name, start: featStart, end: featEnd},
                             dojo.hitch(this, function(ff) {
                             additionnal_info = {'feat-seq':  ff.get('seq'), 'feat-start': featStart,
                                                 'feat-end': featEnd, 'subs': subfeatures, 'scale': scale};
+                             // test if it's a 'variant' feature
+                            if (that.config.variant){
+                                additionnal_info['variant'] = that.config.variant;
+                            }
                             for (var i = 0; i < subfeatures.length; i++) {
                                 additionnal_info['sub-index'] = i;
                                 if (additionnal_info){
@@ -1185,6 +1194,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
     },
 
     renderProtFeatures: function(feature, featDiv, subfeature, displayStart, displayEnd, block, additionnal_info){
+        console.log(additionnal_info['variant']);
         var subStart = subfeature.get('start');
         var subEnd = subfeature.get('end');
         var featLength = displayEnd - displayStart;

@@ -86,7 +86,7 @@ return declare([ NCListStore ],
 
     loadContent: function(content)  {
         var store = this;
-        console.log("   content start: " + content.substr(0, 50));
+        console.log("  -->  content start: " + content.substr(0, 50));
         var gparser = new GFF3Parser();
         var gff3_json = gparser.parse(content);
         console.log("parsed GFF3:");

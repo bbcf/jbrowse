@@ -39,7 +39,7 @@ dl from Ensembl : ftp://ftp.ensembl.org/pub/release-70/gtf/homo_sapiens/
 add 'chr' in front of all chromosome names
 
 change 'protein_coding' to protein (just take line with CDS)
-$ awk '{OFS="\t";FS="\t";if (!/^#/){if (!/^#/){ if($3 ~ '/^CDS$/'){if($2 ~ '/protein_coding/'){print $1,"protein",substr($0,index($0,$3))} else {print $0}}}}'
+$ awk '{OFS="\t";FS="\t";{if (!/^#/){ if($3 ~ "/^CDS$/"){if($2 ~ "/protein_coding/"){print $1,"protein",substr($0,index($0,$3))} else {print $0}}}}'
 
 add the file
 $ bin/flatfile-to-json.pl --gff test-data/Homo_sapiens.GRCh37.70.chr.modified.gtf --tracklabel protein --cssClass basic
