@@ -461,6 +461,7 @@ div.aa {
     display: inline-block;
     text-align: center;
     z-index: 2000;
+    outline: 2px groove #396494;
 }
 
 .aa {

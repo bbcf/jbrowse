@@ -935,10 +935,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         if(subfeatures) {
             //feature rendered is a protein so we need
             //extra information
-            console.log("feature : ");
-            console.log(feature);
-            console.log(labelDiv);
-            console.log(labelDiv.track.key);
 
             if (feature.get("type") == "protein"){
                 //get the feature sequence
@@ -1193,19 +1189,47 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         return subDiv;
     },
 
+
     renderProtFeatures: function(feature, featDiv, subfeature, displayStart, displayEnd, block, additionnal_info){
-        console.log(additionnal_info['variant']);
         var subStart = subfeature.get('start');
         var subEnd = subfeature.get('end');
         var featLength = displayEnd - displayStart;
+        var featStart = additionnal_info['feat-start'];
         var subDiv = document.createElement("div");
         var type = subfeature.get('type');
         subDiv.className = (this.config.style.subfeatureClasses||{})[type] || this.config.style.className + '-' + type;
-        var subStartIndex = subStart - additionnal_info['feat-start'];
-        var subEndIndex = subEnd - additionnal_info['feat-start'];
+        var subStartIndex = subStart - featStart;
+        var subEndIndex = subEnd - featStart;
         var featseq = additionnal_info['feat-seq'];
-        var subseq = featseq.slice(subStartIndex, subEndIndex);
         testit = featseq;
+
+        // test if it's a variant feature
+        // if yes, change the featseq according to the cigar
+        var lenToAdd = 0; // with variant, total length can be changed
+        if(additionnal_info['variant']){
+            var variant = additionnal_info['variant'];
+            var position = variant['position'];
+            if (subStart <= position && position <= subEnd){
+                var ref = variant['ref'];
+                var alt = variant['alt'];
+                var refposition = position - featStart - 1;
+                var virtualref = featseq.slice(refposition, refposition + ref.length);
+                if (ref !== virtualref){
+                    console.warn("Reference given : " + ref + " is not the same than the one fetched from the sequence : " + virtualref);
+                }
+                var spaces = dojo.string.rep(' ', ref.length - alt.length);
+                alt += spaces;
+                featseq = Util.replaceAt(featseq, alt, refposition, refposition + ref.length);
+                lenToAdd = alt.length - ref.length;
+                if(lenToAdd < 0){
+                    lenToAdd = 0;
+                }
+            }
+        }
+        subEndIndex += lenToAdd;
+        subEnd += lenToAdd;
+        featLength += lenToAdd;
+        var subseq = featseq.slice(subStartIndex, subEndIndex);
         // an aa can be on two subfeatures (e.g: 1 codon on the subfeature X and 2 codon on the
         // the subfeature X+1)
         var pre_mod = 0;
@@ -1220,6 +1244,7 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
             }
             subseq = featseq.slice(subStartIndex, subEndIndex);
         }
+
         // fetch more bases at the end if the aa is not finished
         var post_mod = subseq.length % 3;
         if (post_mod > 0){
@@ -1247,33 +1272,64 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         var i = 0;
         var l = subseq.length;
         while (i < l){
-            var cd = subseq.substring(i, i+3);
+            var j = 3;
+            var cd = subseq.substring(i, i+j);
+            var spaces = '';
+            cd = cd.replace(/\s/g, '');
+            if(cd.length < 3){
+                while (cd.length < 3 && (i + j) < l){
+                    spaces += ' ';
+                    j += 1;
+                    cd = subseq.substring(i, i+j).replace(/\s/g, '');
+                }
+            }
+             if(j>3){
+                protseq += dojo.string.rep(' ', j - 3);
+            }
             if(cd){
                 var ad = gencode[cd];
                 if (ad){
                     protseq += ad;
                 }
             }
-            i += 3;
+
+            i += j;
         }
         //subDiv.innerHTML = protseq;
         if (protseq !== ''){
             var charSize = this.getCharacterMeasurements();
 
-            var container  = document.createElement('div');
+            var bigcontainer  = document.createElement('div');
+            // must take in account the border of 1 px
             var charWidth = 100.0 / subseq.length;
             var protWidth = charWidth * 3 + "%";
+            var skipwidth = charWidth + '%';
             var drawChars = additionnal_info['scale'] >= charSize.w;
+            var smallcontainer = document.createElement('ul');
+            smallcontainer.style.listStyleType = 'none';
+            smallcontainer.style.padding = '0px';
+            smallcontainer.style.margin = '0px';
+            bigcontainer.appendChild(smallcontainer);
+            var container = document.createElement('li');
+            smallcontainer.appendChild(container);
             //draw protein sequence
             for( i = 0; i < protseq.length; i++ ) {
+                var prot = protseq[i];
                 var aa = document.createElement('div');
-                aa.className = 'aa aa_' + protseq[i].toLowerCase();
-                aa.style.width = protWidth;
-                if( drawChars )
-                    aa.innerHTML = protseq[i];
+                if (prot === " "){
+                    aa.className = 'aa aa_space';
+                    aa.style.width = skipwidth;
+                } else {
+                    aa.className = 'aa aa_' + protseq[i].toLowerCase();
+                    aa.style.width = protWidth;
+                }
+                if( drawChars ){
+                    aa.innerHTML = prot;
+                }
                 container.appendChild(aa);
             }
-
+            container = document.createElement('li');
+            smallcontainer.appendChild(container);
             //draw adn sequence
             for( i = 0; i < subseq.length; i++ ) {
                 var base = document.createElement('span');
@@ -1283,14 +1339,14 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                     base.innerHTML = subseq[i];
                 container.appendChild(base);
             }
-            container.style.right = displayStart + "px";
-            container.style.width="100%";
-            subDiv.appendChild(container);
+            smallcontainer.style.right = displayStart + "px";
+            smallcontainer.style.width="100%";
+            subDiv.appendChild(smallcontainer);
         }
 
 
         var className;
-        var featLength = displayEnd - displayStart;
+        featLength = displayEnd - displayStart;
         if( this.config.style.subfeatureClasses ) {
             className = this.config.style.subfeatureClasses[type];
             if (className === undefined) { className = type; }

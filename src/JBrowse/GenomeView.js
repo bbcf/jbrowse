@@ -2033,8 +2033,6 @@ GenomeView.prototype._getTracks = function( /**Array[String]*/ trackNames ) {
  *                        rendering of this track
  */
 GenomeView.prototype.renderTrack = function( /**Object*/ trackConfig ) {
-    console.log("[x] Render track : ");
-    console.log(trackConfig);
     var thisB = this;
 
     if( !trackConfig )
@@ -2065,7 +2063,6 @@ GenomeView.prototype.renderTrack = function( /**Object*/ trackConfig ) {
     trackDiv.trackName = trackName;
 
     var trackClass, store;
-    console.log("[x] make track");
     var makeTrack = dojo.hitch(this, function() {
         var track = new trackClass({
                 refSeq: this.ref,
@@ -2077,7 +2074,6 @@ GenomeView.prototype.renderTrack = function( /**Object*/ trackConfig ) {
             });
         if( typeof store.setTrack == 'function' )
             store.setTrack( track );
-        console.log(store);
         // if we can, check that the current reference sequence is
         // contained in the store
         if( store.hasRefSeq ) {
@@ -2118,12 +2114,9 @@ GenomeView.prototype.renderTrack = function( /**Object*/ trackConfig ) {
     // might need to load both the store and the track class, so do it in
     // parallel and have whichever one completes last do the actual
     // track making.
-    console.log("Trackconfig :");
-    console.log(trackConfig);
     if( ! trackConfig.store )
         console.warn("configuration for track "+trackConfig.label+" has no store set", trackConfig );
 
-    console.log("[x] get the store ");
     
     // get the store
     this.browser.getStore( trackConfig.store, function( s ) {
@@ -2132,7 +2125,6 @@ GenomeView.prototype.renderTrack = function( /**Object*/ trackConfig ) {
                 makeTrack();
         });
 
-    console.log("[x] get the class");
     // get the track class
     require( [ trackConfig.type ], function( class_ ) {
         trackClass = class_;
@@ -2235,6 +2227,7 @@ GenomeView.prototype.updateTrackList = function() {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 /**
  * Lay out all shown tracks.
@@ -2273,9 +2266,13 @@ GenomeView.prototype.layoutTracks = function() {
     this.scrollContainer.style.height = this.containerHeight + "px";
 };
 
-=======
-GenomeView.prototype.highlightPos = function(pos){
+
+GenomeView.prototype.highlightPos = function(pos, w){
     this.highlightpos = pos;
+    this.hlwidth = 1;
+    if(w){
+      this.hlwidth = w;
+    }
 };
 
 GenomeView.prototype.drawHighlightPos = function(){
@@ -2289,7 +2286,7 @@ GenomeView.prototype.drawHighlightPos = function(){
         }
         var line = this.verticalHighlight;
         line.style.display = 'block';      //make line visible
-        line.style.width = Math.max(this.bpToPx(1), 1) +'px';
+        line.style.width = Math.max(this.bpToPx(this.hlwidth), 1) +'px';
         line.style.left = posX + 'px'; //set location on screen
         this.drawBasePairLabel({ name: 'highlight', offset: 0, x: posX, parent: this.scaleTrackDiv });
     }

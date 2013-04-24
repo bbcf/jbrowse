@@ -446,7 +446,20 @@ Util = {
             if( domNode.removeAttribute )
                 domNode.removeAttribute( attrName );
         }
-    }
+    },
+    /**
+     * Replace in the String given at the index specified by the String given
+     * Start and End parameters can be given to set limits on what to replace
+     */
+    replaceAt: function(given, replacement, start, end) {
+        if(!start){
+            start = 0;
+        }
+        if(!end){
+            end = start + replacement.length;
+        }
+      return given.substr(0, start) + replacement + given.substr(end);
+   }
 };
 
     return Util;
