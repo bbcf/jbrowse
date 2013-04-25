@@ -56,6 +56,6 @@ following parameters are optionnals:
 - label : the name of the new "variant" track.
 - show : directly show the track on the JBrowse view
 e.g:
-JBrowse.showVariants("tiny", 995125, 'C', 'AT', "myvariant2", true)
+JBrowse.showVariants("myproteins", 995125, 'C', 'AT', "myvariant2", true)
 
 

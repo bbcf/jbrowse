@@ -2372,8 +2372,10 @@ Browser.prototype.hightlightRegion = function(){
 Browser.prototype.showVariants = function(target_key, position, ref, alt, label, show){
     var tracks = this.config.tracks;
     var that = this;
+    var found = false
     dojo.forEach( tracks, function( track, i ) {
         if (track.key == target_key){
+            found = true;
             var newTrack = dojo.clone(track);
             newTrack.key += '_var';
             newTrack.label += '_variants';
@@ -2392,6 +2394,9 @@ Browser.prototype.showVariants = function(target_key, position, ref, alt, label,
             that.view.drawHighlightPos();
         }
     });
+    if(!found){
+        console.error("The track " + target_key + " was not found in tracks.");
+    }
 
 };
 
