@@ -33,6 +33,8 @@ dl http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/genePredToGtf
 dl ftp://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/knownGene.txt.gz
 prepare the data:
 $ zcat test-data/knownGene.txt.gz | cut -f1-10 | bin/genePredToGtf file stdin test-data/knownGene.gtf
+$ python bin/genes2proteins.py -g CDS test-data/knownGene.gtf
+$ bin/flatfile-to-json.pl --gff test-data/knownGene-pz.gtf --tracklabel konwnProt.gff --cssClass basic
 
 :: Homo_sapiens.GRCh37.70.gtf ::
 dl from Ensembl : ftp://ftp.ensembl.org/pub/release-70/gtf/homo_sapiens/

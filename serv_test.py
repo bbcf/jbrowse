@@ -21,7 +21,6 @@ opts, args = getopt.getopt(sys.argv[1:], 'f:p:')
 for opt in opts:
     if 'p' in opt[0]:
         port = opt[1]
-        
     if 'f' in opt[0]:
         prefix = opt[1]
         print('[x] Serving on  prefix: %s' % prefix)
