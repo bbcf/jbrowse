@@ -2383,7 +2383,7 @@ Browser.prototype.showVariants = function(target_key, position, ref, alt, label,
             }
             newTrack.variant = {'position': position, 'ref': ref, 'alt': alt};
             that.publish( '/jbrowse/v1/v/tracks/new', [newTrack] );
-            that.publish('/jbrowse/v1/c/tracks/new', [newTrack]);
+            //that.publish('/jbrowse/v1/c/tracks/new', [newTrack]);
             if(show){
                that.publish('/jbrowse/v1/v/tracks/show', [newTrack]);
             }

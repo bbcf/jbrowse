@@ -44,5 +44,16 @@ $ awk '{OFS="\t";FS="\t";{if (!/^#/){ if($3 ~ "/^CDS$/"){if($2 ~ "/protein_codin
 add the file
 $ bin/flatfile-to-json.pl --gff test-data/Homo_sapiens.GRCh37.70.chr.modified.gtf --tracklabel protein --cssClass basic
 
+## SHOWING VARIANT ###
+Calll the function "showVariants" with the parameters : target_key, position, ref, alt, label, show.
+- target_key : the reference sequence
+- position : the position of the variant (absolute position)
+- ref : the reference variation
+- alt : the variation
+following parameters are optionnals:
+- label : the name of the new "variant" track.
+- show : directly show the track on the JBrowse view
+e.g:
+JBrowse.showVariants("tiny", 995125, 'C', 'AT', "myvariant2", true)
 
 
