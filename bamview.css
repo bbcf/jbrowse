@@ -1,0 +1,47 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or vendor/assets/stylesheets of plugins, if any, can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the top of the
+ * compiled file, but it's generally better to create a new file per style scope.
+ *
+ *= require_self
+ *= require_tree .
+ */
+
+body {
+  background-color: #fff;
+  color: #333;
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  margin:8px;
+}
+.bloc {border:1px solid blue}
+.bloc_header {}
+.bloc_label {float:left; border:0px solid red}
+.region {float:left; border:0px solid green}
+.region_label {float:left; border:0px solid orange}
+.scale_main {clear:both}
+.scales {float:left}
+.scale_label {float:left}
+.scale {float:left}
+.tracks {border:1px solid pink}
+.track {float:left;}
+.track_main {clear:both}
+.track_labels {border:1px solid dark-blue}
+.track_label {float:left;}
+
+#header {position:fixed;left:0px;top:0px;padding-left:.5em;width:100%;height:40px;z-index:1000;background-color:white}
+
+#toolbox {font-size:.8em; line-height:1.2em; background-color:#999999; color:white; position:fixed; z-index:1001; top:0px; right:0px; width:450px; 
+	 padding-left:.8em; padding-bottom:.5em}
+
+#toolbox div.feature_desc table tr td{vertical-align:top}
+.scrollable {padding:0px;margin:0px;border0px;overflow-y:scroll}
+.track_label {position:absolute;z-index:1000;}
+.button {height:35px;width:35px;margin-left:10px;padding-top:2px;text-align:center;align:center;vertical-align:center;float:left;border:3px solid grey}
+.selected_mode {border-color:#aaaaff}

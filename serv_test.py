@@ -13,7 +13,7 @@ import urllib
 from wsgiproxy.app import WSGIProxyApp
 
 port = 8080
-prefix=''
+prefix = ''
 use_root = False
 
 opts, args = getopt.getopt(sys.argv[1:], 'f:p:')
@@ -61,12 +61,44 @@ def index(filename):
         fname = 'index.html'
     print 'filename %s ' % filename
     return static_file(fname, root=os.path.join(path, ''))
-    
+
+
 @app.route('/')
 @view('index.html')
 def home():
     return {}
 
+
+@app.route('/bamview')
+@view('bamview.html')
+def bamview(chr_number="2", position=47635504, bam_file="zhenyu.bam", species='hg19', window_size=1000, zoom=2):
+    import bamview
+    bam_file = os.path.join('test-data', bam_file)
+    result_js = bamview.generate_json(chr_number, position, bam_file, species, window_size/2, zoom)
+    return {'result_js': result_js}
+
+"""
+ def create
+    #retrieve the parameters
+ @gview = Gview.new(params[:gview])
+
+ file = "lib/zhenyu.bam" ### for the moment static, must be another parameter like params[:gview][:filename]; path being known server side
+
+  # run the command
+ @cmd = "python /srv/gviz_sophia/lib/bam_viewer.py #{file} #{@gview.assembly_name} #{@gview.window_size} #{@gview.chr} #{@gview.pos} #{@gview.zoom}"
+ @result_js = ""
+ @error = ''
+     Open4::popen4(@cmd) do |pid, stdin, stdout, stderr|
+ @result_js = stdout.read.strip
+ @error = stderr.read.strip
+ end
+
+   #render json
+ respond_to do |format|
+ format.html {render action: "show"}
+ end
+ end
+ """
 
 useapp = app
 if use_root:

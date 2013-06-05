@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content = "text/html; charset=utf-8">
+    <title>JBrowse</title>
+    <script type="text/javascript" src="src/jquery.js" data-dojo-config="async: 1"></script>
+    <script type="text/javascript" src="src/JBrowse/bamview.js" data-dojo-config="async: 1"></script>
+    <link rel="stylesheet" type="text/css" href="bamview.css">
+  </head>
+
+  <body>
+    <div id='div_selection_canvas' style='position:absolute;top:50px;padding:0px;z-index:10000'></div>
+    <div id='canvases' style='position:absolute;top:50px;padding:0px'></div>
+    <div id='track_labels'></div>
+    <div id='toolbox'>
+    <div id='cur_pos'></div>
+    <div id='browsing_info'></div>
+    <div id='feature_desc'></div>
+</div>
+  </body>
+
+<script type="text/javascript">
+    //<![CDATA[
+//var t = <%= raw @result_js %>;
+var t = {{!result_js}};
+regions = t[0];
+tracks = t[1];
+interprete_json('canvases');
+//]]
+</script>
+
+</html>
