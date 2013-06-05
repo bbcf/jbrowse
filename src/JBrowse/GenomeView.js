@@ -2226,8 +2226,6 @@ GenomeView.prototype.updateTrackList = function() {
     }
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 /**
  * Lay out all shown tracks.

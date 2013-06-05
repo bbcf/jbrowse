@@ -2390,7 +2390,7 @@ Browser.prototype.showVariants = function(target_key, position, ref, alt, label,
                that.publish('/jbrowse/v1/v/tracks/show', [newTrack]);
             }
             var diflen = Math.abs(ref.length - alt.length);
-            that.view.highlightPos(position, diflen);
+            that.view.highlightPos(position, alt.length);
             that.view.drawHighlightPos();
         }
     });
