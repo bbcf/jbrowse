@@ -61,6 +61,8 @@ def bamview(fname, species, chrnumber, position):
     window_size = int('w' in request.query and request.query['w'] or 1000)
     zoom = int('z' in request.query and request.query['z'] or 2)
     bam_file = os.path.join('test-data', fname) + '.bam'
+    if not os.path.exists(bam_file):
+        return "File '%s' does not exist." % bam_file
     result_js = bamview.generate_json(chrnumber, position, bam_file, species, window_size/2, zoom)
     return {'result_js': result_js}
 
@@ -70,7 +72,7 @@ def index(filename):
     path, fname = os.path.split(filename)
     if not fname:
         fname = 'index.html'
-    #print 'filename %s ' % filename
+    print 'filename %s - %s ' % (filename, path)
     return static_file(fname, root=os.path.join(path, ''))
 
 

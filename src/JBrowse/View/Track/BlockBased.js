@@ -869,6 +869,23 @@ return declare( [Component,DetailsMixin,Destroyable],
                               that.browser.publish( '/jbrowse/v1/v/tracks/delete', [that.config] );
                       });
               }
+            },
+            {
+                label: 'Bam viewer',
+                title: "Launch bam viewer",
+                iconClass: 'dijitIconApplication',
+                action: function() {
+                    var t = "<fname>/<species>/<chrnumber>/<position:int>";
+                    var region = that.genomeView.visibleRegion();
+                    var w = region['end'] - region['start'];
+                    var position = region['start'] + w / 2;
+                    var starter = '/';
+                    if(window.location['pathname']){
+                        starter = window.location['pathname'];
+                    }
+                    var redir = starter + 'bamview/' + that.config.key + '/hg19/' + region['ref'] + '/' + parseInt(position) + '?w=' + parseInt(w);
+                    window.open(redir, 'bamviewer');
+                }
             }
         ];
     },

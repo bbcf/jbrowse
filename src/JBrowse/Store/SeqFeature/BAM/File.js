@@ -148,7 +148,8 @@ var BamFile = declare( null,
             function(r) {
                 var unc = BAMUtil.unbgzf(r);
                 var uncba = new Uint8Array(unc);
-
+                console.log(readInt(uncba, 0));
+                console.log(BAM_MAGIC);
                 if( readInt(uncba, 0) != BAM_MAGIC) {
                     dlog('Not a BAM file');
                     failCallback( 'Not a BAM file' );
