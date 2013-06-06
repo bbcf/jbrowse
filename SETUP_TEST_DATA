@@ -59,3 +59,9 @@ e.g:
 JBrowse.showVariants("myproteins", 995125, 'C', 'AT', "myvariant2", true)
 
 
+## BAMVIEW ##
+direct => http://sugar.epfl.ch/jbrowse-sg/bamview/zhenyu/hg19/2/47635504?z=2&w=1000
+
+
+
+
