@@ -32,7 +32,7 @@ for opt in opts:
 from bottle import SimpleTemplate
 SimpleTemplate.defaults["_u"] = app.get_url
 from bottle import static_file
-
+SimpleTemplate.defaults["serv"] = 'http://sugar.epfl.ch/jbrowse-sg'
 
 @app.route('/static/<filename:path>', name='static')
 def server_static(filename):
@@ -54,12 +54,23 @@ def bv():
     return data.read()
 
 
+@app.route('/bamview/<fname>/<species>/<chrnumber>/<position:int>')
+@view('bamview.html')
+def bamview(fname, species, chrnumber, position):
+    import bamview
+    window_size = int('w' in request.query and request.query['w'] or 1000)
+    zoom = int('z' in request.query and request.query['z'] or 2)
+    bam_file = os.path.join('test-data', fname) + '.bam'
+    result_js = bamview.generate_json(chrnumber, position, bam_file, species, window_size/2, zoom)
+    return {'result_js': result_js}
+
+
 @app.route('/<filename:path>')
 def index(filename):
     path, fname = os.path.split(filename)
     if not fname:
         fname = 'index.html'
-    print 'filename %s ' % filename
+    #print 'filename %s ' % filename
     return static_file(fname, root=os.path.join(path, ''))
 
 
@@ -69,13 +80,10 @@ def home():
     return {}
 
 
-@app.route('/bamview')
-@view('bamview.html')
-def bamview(chr_number="2", position=47635504, bam_file="zhenyu.bam", species='hg19', window_size=1000, zoom=2):
-    import bamview
-    bam_file = os.path.join('test-data', bam_file)
-    result_js = bamview.generate_json(chr_number, position, bam_file, species, window_size/2, zoom)
-    return {'result_js': result_js}
+
+
+
+
 
 """
  def create
