@@ -59,7 +59,13 @@ def bv():
 def bamview(fname, species, chrnumber, position):
     import bamview
     window_size = int('w' in request.query and request.query['w'] or 1000)
-    zoom = int('z' in request.query and request.query['z'] or 2)
+    if window_size > 2000:
+        window_size = 2000
+    setzoom = 2
+    if window_size <= 500:
+        setzoom = 1
+
+    zoom = int('z' in request.query and request.query['z'] or setzoom)
     bam_file = os.path.join('test-data', fname) + '.bam'
     if not os.path.exists(bam_file):
         return "File '%s' does not exist." % bam_file
