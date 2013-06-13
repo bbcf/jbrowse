@@ -935,7 +935,6 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         if(subfeatures) {
             //feature rendered is a protein so we need
             //extra information
-
             if (feature.get("type") == "protein"){
                 //get the feature sequence
                 var featStart = feature.get("start");

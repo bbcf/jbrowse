@@ -558,6 +558,7 @@ sub selectall {
     my ($table, $filter) = @_;
     my @result;
     for_columns($table, sub { push @result, $_[0] if ($filter->($_[0])) });
+
     return \@result;
 }
 

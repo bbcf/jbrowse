@@ -13,7 +13,7 @@ import csv
 import os
 
 
-def transform(inpath, outpath=None, skipfeatures=None, getfeatures=None, **csv_opts):
+def transform(inpath, outpath=None, skipfeatures=None, getfeatures=None, replacefeature=None, **csv_opts):
     """
     Transform the "genes" to "proteins". Assume the gtf file is sorted :features that belongs
     to the same gene are grouped together (it's usually the case).
@@ -63,9 +63,11 @@ def transform(inpath, outpath=None, skipfeatures=None, getfeatures=None, **csv_o
         return d
 
     # write in output file
-    def _woutput(out, previous):
+    def _woutput(out, previous, replacefeature=None):
+        if not replacefeature:
+            replacefeature = previous['feature']
         out.write('%s\n' % '\t'.join((previous['seqname'], previous['source'],
-                                     'protein', previous['start'], previous['end'],
+                                     replacefeature, previous['start'], previous['end'],
                                       previous['score'], previous['strand'], previous['frame'],
                                      'ID=%s' % previous['id'])))
         for line in previous['lines']:
@@ -114,11 +116,11 @@ def transform(inpath, outpath=None, skipfeatures=None, getfeatures=None, **csv_o
                                 previous['end'] = max(previous['end'], row[4])
                                 previous['lines'].append(row)
                             else:
-                                _woutput(outfile, previous)
+                                _woutput(outfile, previous, replacefeature)
                                 _init_previous(previous, idattr, row)
 
             if previous:
-                _woutput(outfile, previous)
+                _woutput(outfile, previous, replacefeature)
 
     # with open(outpath, 'w') as outfile:
     #     pass
@@ -127,13 +129,14 @@ def transform(inpath, outpath=None, skipfeatures=None, getfeatures=None, **csv_o
 if __name__ == '__main__':
     import sys
     import getopt
-    opts, args = getopt.getopt(sys.argv[1:], 'o:s:g:')
+    opts, args = getopt.getopt(sys.argv[1:], 'o:s:g:r:')
     if len(args) < 1:
         raise Exception("You must give the gff/gtf file as first arg.")
     fpath = args[0]
     outpath = None
     skipfeatures = None
     getfeatures = None
+    replacefeature = None
     for opt in opts:
         if 'o' in opt[0]:
             outpath = opt[1]
@@ -145,5 +148,7 @@ if __name__ == '__main__':
             getfeatures = opt[1]
             if ',' in getfeatures:
                 getfeatures = getfeatures.split(',')
+        elif 'r' in opt[0]:
+            replacefeature = opt[1]
     csv_opts = {'delimiter': '\t'}
-    transform(fpath, outpath, skipfeatures, getfeatures, **csv_opts)
+    transform(fpath, outpath, skipfeatures, getfeatures, replacefeature, **csv_opts)
