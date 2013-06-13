@@ -71,6 +71,8 @@ return declare(null,{
 
         this._renderCoreDetails( track, f, featDiv, container );
 
+        this._renderLinks(container, track, f, featDiv );
+
         this._renderAdditionalTagsDetail( track, f, featDiv, container );
 
         this._renderUnderlyingReferenceSequence( track, f, featDiv, container );
@@ -78,6 +80,15 @@ return declare(null,{
         this._renderSubfeaturesDetail( track, f, featDiv, container );
 
         return container;
+    },
+
+    _renderLinks: function( parentElement, track, f, featDiv  ) {
+      var lContainer = domConstruct.create(
+            'div',
+            { className: 'links',
+              innerHTML: '<h2 class="sectiontitle">Links</h2><div class="link"><a href="https://www.genome.ucsc.edu/cgi-bin/hgTracks?clade=mammal&org=Human&db=hg19&position=' + f[7] + '">UCSC</a></div><div class="link"><a href="https://www.ncbi.nlm.nih.gov/gene/?term=' + f[7] + '">NCBI</a></div><div class="link"><a href="http://www.ensembl.org/Homo_sapiens/Search/Results?species=Homo_sapiens;idx=;q=' + f[7] + '">Ensembl</a></div>'
+            },
+            parentElement );
     },
 
     _renderCoreDetails: function( track, f, featDiv, container ) {

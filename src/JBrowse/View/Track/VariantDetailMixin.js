@@ -37,11 +37,22 @@ return declare( FeatureDetailMixin, {
         // genotypes in a separate section
         this._renderGenotypes( container, track, f, featDiv );
 
+        this._renderLinks(container, track, f, featDiv );
+
         return container;
     },
 
     _isReservedTag: function( t ) {
         return this.inherited(arguments) || {genotypes:1}[t.toLowerCase()];
+    },
+
+    _renderLinks: function( parentElement, track, f, featDiv  ) {
+      var lContainer = domConstruct.create(
+            'div',
+            { className: 'links',
+              innerHTML: '<h2 class="sectiontitle">Links</h2><div class="link"><a href="http://www.ncbi.nlm.nih.gov/snp/?term=' + f._id + '">NCBI</a></div>'
+            },
+            parentElement );
     },
 
     _renderGenotypes: function( parentElement, track, f, featDiv  ) {
