@@ -2366,7 +2366,7 @@ showRegionWithHighlight: function( location ) {
     this.showRegion( location );
 },
 
-hightlightRegion = function(){
+hightlightRegion: function(){
     if(this.config.hl){
         this.view.highlightPos(this.config.hl);
     }
@@ -2383,10 +2383,10 @@ hightlightRegion = function(){
  * ~ VCF format
  * @return publish a new 'variant' track.
  */
-showVariants = function(target_key, position, ref, alt, label, show){
+showVariants : function(target_key, position, ref, alt, label, show){
     var tracks = this.config.tracks;
     var that = this;
-    var found = false
+    var found = false;
     dojo.forEach( tracks, function( track, i ) {
         if (track.key == target_key){
             found = true;

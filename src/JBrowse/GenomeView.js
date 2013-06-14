@@ -2285,7 +2285,7 @@ layoutTracks: function() {
 },
 
 
-highlightPos = function(pos, w){
+highlightPos: function(pos, w){
     this.highlightpos = pos;
     this.hlwidth = 1;
     if(w){
@@ -2293,7 +2293,7 @@ highlightPos = function(pos, w){
     }
 },
 
-drawHighlightPos = function(){
+drawHighlightPos: function(){
     if (this.highlightpos){
         var pxDist = this.bpToPx(this.highlightpos) - (this.getPosition().x + this.offset);
         var posX = pxDist + dojo.position(this.elem, true).x;
