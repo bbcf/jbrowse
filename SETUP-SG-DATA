@@ -1,72 +1,158 @@
 ##############
 ## REQUIRED ##
+#############
+* JBrowse run and you succed to show the JBrowse "Congratulations html page".
+If not, please see the file 'INSTALL_JBROWSE'
 
-*JBrowse run and you succed to show the JBrowse "Congratulations html page".
-(all following commands run on jbrowe home directory)
+* All the following commands run on jbrowe home directory
 
-*for vcf data: bgzip and tabix working
-both can be fetched here: http://sourceforge.net/projects/samtools/files/tabix/
-run make and put binaries in jbrowse bin directory
+* All data will be fetched in the directory 'sg-data'
 
-*the jbrowse data directory used is sg-data/
-mkdir it if you want to use the oneliners provided
+* When there is $$$. It is the command that you need to do.
+
+* For VCF data: bgzip and tabix must be compiled in bin/
+$$$
+wget http://downloads.sourceforge.net/project/samtools/tabix/tabix-0.2.6.tar.bz2
+bzip2 -d tabix-0.2.6.tar.bz2
+tar -xf tabix-0.2.6.tar
+cd tabix-0.2.6
+make
+cd ..
+mv tabix-0.2.6/tabix tabix-0.2.6/bgzip bin/.
+$$$
+
 
 ###########
 ## FASTA ## 
-$ bin/prepare-refseqs.pl --fasta sg-data/human.fasta
+###########
+
+This is an important step.
+The fasta is the sequence against all future data tracks will be displayed.
+A common problem that you can have with the tracks is that you mix data for multiple sources that have differents conventions.
+For instance, sometimes chromosomes on the human genome are given like this : "1", "2", "3", ..., "X", ... 
+but, on other databases, chromosomes are given like this : "chr1", "chr2", "chr3", ..., "chrX", ...
+
+so BEWARE that when you import txt files form a source or another, it must be properly configurated for your sequence.
+
+$$$
+bin/prepare-refseqs.pl --fasta sg-data/human_g1k_v37.fasta
+$$$
 (Zhenyu should have the fasta)
+chromosomes are 1, 2, 3, ....
 
 
 ############
 ## REFSEQ ##
-Get 'refSeq' track from GFF file here: https://www.genome.ucsc.edu/cgi-bin/hgTables
-(UCSC dump not available)
+############
+Add the 'refSeq' track. 
+Got to https://www.genome.ucsc.edu/cgi-bin/hgTables
+In the "Table browser" select the right parameters :
+- clade: Mammal
+- genome: Human
+- assembly: GRCh37
+- group: Genes and Gene Prediction Tracks
+- region: genome
+- track: RefSeq Genes
+- output format: GTF - gene transfert format
+- output file: refSeq.gff
+- file type returned: gzip compressed
 
-$ python bin/genes2proteins.py -o sg-data/refSeq.gff.new sg-data/refSeq.gff && \
-bin/flatfile-to-json.pl --gff sg-data/refSeq.gff.new --tracklabel RefSeqGenes --cssClass feature5
+The click on "get output" ~ it should download a file of ~6 Mb (~90Mb uncompressed) 
 
-(differents ccs styles here: http://jbrowse.org/code/JBrowse-1.9.3/docs/featureglyphs.html)
+Then you need to uncompress the file and "link" features one to each other. It means that in the GFF file, some features refers to 
+the same Gene Id. They need to be regrouped under one "Parent" feature in order to tell Jbrowse to draw a display like this :
+[*****]-----[*****]-----[*****] instead of -----      ------       ------ where features are not linked one to each others. 
+The python script "genes2proteins" is doing that. Please refers to it's own documentation if you want to know more.
+Then add the gff file to the browser with the "flatfile-to-json" perl script.
+
+$$$ ungzip
+gzip -d sg-data/refSeq.gff.gz
+$$$
+
+Now look at the chromosomes names in the gff file - first column, you may change them 
+corresponding to your fasta file.
+
+$$$ remove chr in front of every line
+sed -i 's/^chr//'g sg-data/refSeq.gff
+$$$
+
+then
+
+$$$ do the work
+python bin/genes2proteins.py -o sg-data/refSeq.linked.gff sg-data/refSeq.gff && \
+bin/flatfile-to-json.pl --gff sg-data/refSeq.linked.gff --tracklabel RefSeqGenes --cssClass feature5
+$$$
+
+You may change the css class of the feature displayed: take a look at the differents ccs styles that you could use here: 
+http://jbrowse.org/code/JBrowse-1.9.3/docs/featureglyphs.html
 
 
 ##########
 ## CCDS ##
-Use UCSC dump method
+##########
+Use UCSC dump method provided by jbrowse to generate the data tracks.
 
-$ wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/trackDb.sql -P sg-data && \
+$$$ Get the data
+wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/trackDb.sql -P sg-data && \
 wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/trackDb.txt.gz -P sg-data && \
 wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/ccdsGene.sql -P sg-data && \
-wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/ccdsGene.txt.gz -P sg-data && \
-bin/ucsc-to-json.pl -in sg-data/ --track ccdsGene
+wget http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/ccdsGene.txt.gz -P sg-data
+$$$
 
+of course check for the chromosomes names ("1" or "chr1" ?)
+$$$ remove 'chr' in the file 
+gzip -d sg-data/ccdsGene.txt.gz && \
+sed 's/\(\s*\)chr\(\S*\s*\)/\1\2/'g sg-data/ccdsGene.txt > sg-data/ccdsGene.modified.txt && \
+mv sg-data/ccdsGene.modified.txt sg-data/ccdsGene.txt && \
+gzip sg-data/ccdsGene.txt
+$$$
+
+then
+ 
+$$$ add the track in jbrowse
+bin/ucsc-to-json.pl -in sg-data/ --track ccdsGene
+$$$
 
 #############################
 ## CLINIC VARIANTS COMMONS ##
-Get file from the NCBI, change chromosomes names to add 'chr' in front of them, 
-then Bgzip it then index it with samtools tabix 
-and finally add configuration to trackList.json
+#############################
+Get file from the NCBI, and take attention to the chromosome name, you have been warned enough. From now I will skip this step.
+and add the configuration file located in sg-data into trackList.json
 
-$ wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz -P sg-data && \
-bin/bgzip -d sg-data/common_all.vcf.gz && \
-awk '{ if (!/^#/){print "chr"$0} }' sg-data/common_all.vcf > sg-data/common_all.chr.vcf && \
-bin/bgzip sg-data/common_all.chr.vcf && \
-bin/tabix -p vcf sg-data/common_all.chr.vcf.gz && \
+Perhaps, if you need to change the chromosomes names, you will need the tools that you shouls have in bin/ :
+tabix & bgzip (in case you need it)
+to unbzip: bin/bgzip -d sg-data/common_all.vcf.gz
+to bzip again: bin/bgzip sg-data/common_all.chr.vcf
+to index with tabix: bin/tabix -p vcf sg-data/common_all.chr.vcf.gz
+
+
+
+$$$ do the work
+wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz -P sg-data && \
+wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/common_all.vcf.gz.tbi -P sg-data && \
 bin/add-track-json.pl sg-data/vcf-commons.conf data/trackList.json
-
+$$$
 
 ############################
 ## CLINIC VARIANTS LATEST ##
-$ wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/clinvar_20130506.vcf.gz -P sg-data && \
-bin/bgzip -d sg-data/clinvar_20130506.vcf.gz && \
-awk '{ if (!/^#/){print "chr"$0} }' sg-data/clinvar_20130506.vcf > sg-data/clinvar_20130506.chr.vcf && \
-bin/bgzip sg-data/clinvar_20130506.chr.vcf && \
-bin/tabix -p vcf sg-data/clinvar_20130506.chr.vcf.gz && \
-bin/add-track-json.pl sg-data/vcf-latest.conf data/trackList.json
+############################
 
+The same as previous one
+
+$$$
+wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/clinvar_20130506.vcf.gz -P sg-data && \
+wget ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606/VCF/clinvar_20130506.vcf.gz.tbi -P sg-data
+bin/add-track-json.pl sg-data/vcf-latest.conf data/trackList.json
+$$$
 
 ####################
 ## KNOWN PROTEINS ##
-use the refSeq.gff alredy downloaded.
-Filter all CDS and replace 'CDS' by 'protein'
+###################
+Use refSeq.gff already downloaded to filter out proteins and group features together as we already did with refSeq.gff.
+Filter all CDS (coding sequences) and replace 'CDS' by 'protein' to tell jbrowse to display this feature as a protein on screen.
+And then add the file to the browser.
 
-$ python bin/genes2proteins.py -g CDS -r protein -o sg-data/refSeq.gff.pz sg-data/refSeq.gff && \
+$$$
+python bin/genes2proteins.py -g CDS -r protein -o sg-data/refSeq.gff.pz sg-data/refSeq.gff && \
 bin/flatfile-to-json.pl --gff sg-data/refSeq.gff.pz --tracklabel RefSeqCDS --cssClass feature3
+$$$
