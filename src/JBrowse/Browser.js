@@ -1569,11 +1569,11 @@ showRegion: function( location ) {
  * &lt;feature name/ID&gt;
  */
 
-navigateTo: function(loc) {
+navigateTo: function(loc, isrefseq) {
     this.afterMilestone( 'completely initialized', dojo.hitch( this, function() {
         // if it's a foo:123..456 location, go there
         var location = typeof loc == 'string' ? Util.parseLocString( loc ) :  loc;
-        if( location ) {
+        if( ( location ) && !( isrefseq )){
             this.navigateToLocation( location );
         }
         // otherwise, if it's just a word, try to figure out what it is
@@ -2264,7 +2264,7 @@ createNavBox: function( parent ) {
 
                     // only trigger navigation if actually switching sequences
                     if( newRefName != this.refSeq.name ) {
-                        this.navigateTo(newRefName);
+                        this.navigateTo(newRefName, true);
                     }
                 })
             }).placeAt( refSeqSelectBoxPlaceHolder );
