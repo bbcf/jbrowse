@@ -293,8 +293,8 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         if( ! 'x' in coords )
             return;
 
-	var viewmin = this.browser.view.minVisible();
-	var viewmax = this.browser.view.maxVisible();
+    var viewmin = this.browser.view.minVisible();
+    var viewmax = this.browser.view.maxVisible();
 
         array.forEach( this.blocks, function( block ) {
             if( ! block )
@@ -948,29 +948,31 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
                 var featStart = feature.get("start");
                 var featEnd = feature.get("end");
                 var featseq = feature.get("seq");
+                var strand = feature.get('strand');
                 var that = this;
                 this.browser.getStore('refseqs', dojo.hitch(this,function( refSeqStore ) {
                     if(refSeqStore) {
                         refSeqStore.getFeatures({ref: this.refSeq.name, start: featStart, end: featEnd},
                             dojo.hitch(this, function(ff) {
-                            additionnal_info = {'feat-seq':  ff.get('seq'), 'feat-start': featStart,
-                                                'feat-end': featEnd, 'subs': subfeatures, 'scale': scale};
-                             // test if it's a 'variant' feature
-                            if (that.config.variant){
-                                additionnal_info['variant'] = that.config.variant;
-                            }
-                            for (var i = 0; i < subfeatures.length; i++) {
-                                additionnal_info['sub-index'] = i;
-                                if (additionnal_info){
-                                    this.renderProtFeatures(feature, featDiv,
-                                        subfeatures[i], displayStart, displayEnd, block, additionnal_info);
+                                additionnal_info = {'feat-seq':  ff.get('seq'), 'feat-start': featStart,
+                                                    'feat-end': featEnd, 'subs': subfeatures, 'scale': scale,
+                                                    'strand': strand};
+                                 // test if it's a 'variant' feature
+                                if (that.config.variant){
+                                    additionnal_info['variant'] = that.config.variant;
                                 }
-                            }
-                            // update feature & label top
-                             featDiv.style.top = (featDiv.style.top.replace('px', '') * 1.4) + 'px';
-                             labelDiv.style.top = (labelDiv.style.top.replace('px', '') * 1.4) + 'px';
-                         }
-                        ));
+                                for (var i = 0; i < subfeatures.length; i++) {
+                                    additionnal_info['sub-index'] = i;
+                                    if (additionnal_info){
+                                        this.renderProtFeatures(feature, featDiv,
+                                            subfeatures[i], displayStart, displayEnd, block, additionnal_info);
+                                    }
+                                }
+                                // update feature & label top
+                                 featDiv.style.top = (featDiv.style.top.replace('px', '') * 1.4) + 'px';
+                                 labelDiv.style.top = (labelDiv.style.top.replace('px', '') * 1.4) + 'px';
+                            })
+                        );
                     }
                 }));
             /////////////*******************
@@ -1276,6 +1278,22 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
         // translate
         var gencode = this.browser.config.fake_gencode;
         var protseq = '';
+
+        // prepare the loop array to reverse or not the sequence
+        // var looparray = new Array(subseq.length);
+        // for (var i=0;i <subseq.length;i++){
+        //     looparray[i]=i;
+        // }
+        // if (additionnal_info['strand'] == -1){
+        //     looparray.reverse();
+        // }
+        // console.log(looparay);
+
+        // inverse subseq for the traduction if strand is -1
+        if (additionnal_info['strand'] == -1){
+            subseq = subseq.split("").reverse().join("");
+            subseq = Util.complement(subseq);
+        }
         var i = 0;
         var l = subseq.length;
         while (i < l){
@@ -1302,8 +1320,16 @@ var HTMLFeatures = declare( [ BlockBased, YScaleMixin, ExportMixin, FeatureDetai
 
             i += j;
         }
+
+        //reinverse subseq
+        if (additionnal_info['strand'] == -1){
+            subseq = subseq.split("").reverse().join("");
+        }
         //subDiv.innerHTML = protseq;
         if (protseq !== ''){
+            if (additionnal_info['strand'] == -1){
+                protseq = protseq.split("").reverse().join("");
+            }
             var charSize = this.getCharacterMeasurements();
 
             var bigcontainer  = document.createElement('div');

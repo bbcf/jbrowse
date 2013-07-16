@@ -234,18 +234,15 @@ return declare( null,
         req.onreadystatechange = dojo.hitch( this, function() {
             if (req.readyState == 4) {
                 if (req.status == 200 || req.status == 206) {
-                    console.log("readychangestate");
                     // if this response tells us the file's total size, remember that
                     this.totalSizes[request.url] = (function() {
                         var contentRange = req.getResponseHeader('Content-Range');
-                        console.log(contentRange);
 
                         if( ! contentRange )
                             return undefined;
                         var match = contentRange.match(/\/(\d+)$/);
                         return match ? parseInt(match[1]) : undefined;
                     })();
-                    console.log(req);
 
                     var response = req.response || req.mozResponseArrayBuffer || (function() {
                         try{
